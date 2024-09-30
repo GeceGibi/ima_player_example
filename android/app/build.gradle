@@ -45,7 +45,7 @@ android {
 
     defaultConfig {
         compileSdk 34
-        minSdkVersion 26
+        minSdkVersion 20
         targetSdkVersion 34
 
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).

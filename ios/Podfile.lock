@@ -1,9 +1,9 @@
 PODS:
   - Flutter (1.0.0)
-  - GoogleAds-IMA-iOS-SDK (3.19.2)
+  - GoogleAds-IMA-iOS-SDK (3.20.0)
   - ima_player (0.0.1):
     - Flutter
-    - GoogleAds-IMA-iOS-SDK (~> 3.19.1)
+    - GoogleAds-IMA-iOS-SDK (~> 3.20.0)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
@@ -20,10 +20,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/ima_player/ios"
 
 SPEC CHECKSUMS:
-  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
-  GoogleAds-IMA-iOS-SDK: 0e817c05ab26f1b9285c80f4a75e1350a916d50b
-  ima_player: 02c3692b63c0ea352f1663d7332e0a9c33189ada
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  GoogleAds-IMA-iOS-SDK: f9a6bd69e34f6c3a2d6b2f7cd56814b78fc680f9
+  ima_player: 3c06b1f58c13d82f0b0b292e756ef789bfed9dfc
 
 PODFILE CHECKSUM: fcaf275b63acbd4b8e39ea8d09a0b556d14b263e
 
-COCOAPODS: 1.14.3
+COCOAPODS: 1.15.2

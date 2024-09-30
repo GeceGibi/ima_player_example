@@ -55,40 +55,48 @@ class PlayerScreen extends StatefulWidget {
 }
 
 class _PlayerScreenState extends State<PlayerScreen> {
-  var position = Duration.zero;
+  var position = ValueNotifier(Duration.zero);
   var events = <AdEventType>[];
 
-  final controller = ImaPlayerController.asset(
+  final controllerAsset = ImaPlayerController.asset(
     'assets/video.mp4',
     imaTag:
-        'https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_preroll_skippable&sz=640x480&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=',
+        'https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_ad_samples&sz=640x480&cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=',
     options: const ImaPlayerOptions(
       autoPlay: true,
       initialVolume: 1.0,
-      isMixWithOtherMedia: false,
-      showPlaybackControls: false,
+      isMixWithOtherMedia: true,
     ),
   );
+
+  // final controllerNetwork = ImaPlayerController.network(
+  //   'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+  //   // imaTag:
+  //   //    'https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_preroll_skippable&sz=640x480&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=',
+  //   options: const ImaPlayerOptions(
+  //     autoPlay: false,
+  //     initialVolume: 1.0,
+  //     isMixWithOtherMedia: true,
+  //   ),
+  // );
 
   @override
   void initState() {
     super.initState();
 
-    controller.onPlayerReady.then((value) {
+    controllerAsset.onPlayerReady.then((value) {
       print('#####');
       print('READY');
       print('#####');
     });
 
-    controller.onAdLoaded.listen((event) {
+    controllerAsset.onAdLoaded.listen((event) {
       print('#####');
       print('event: $event');
       print('#####');
-    }).onError((error) {
-      print(error);
     });
 
-    controller.onAdEvent.listen((event) {
+    controllerAsset.onAdEvent.listen((event) {
       print('#####');
       print('event: $event');
       print('#####');
@@ -97,23 +105,30 @@ class _PlayerScreenState extends State<PlayerScreen> {
       setState(() {});
     });
 
+    controllerAsset.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+
     Timer.periodic(const Duration(milliseconds: 200), (timer) async {
       if (!mounted) {
         timer.cancel();
         return;
       }
 
-      final pos = await controller.position;
+      if (!controllerAsset.value.isReady) {
+        return;
+      }
 
-      setState(() {
-        position = pos;
-      });
+      position.value = await controllerAsset.position;
     });
   }
 
   @override
   void dispose() {
-    controller.dispose();
+    controllerAsset.dispose();
+    // controllerNetwork.dispose();
     super.dispose();
   }
 
@@ -124,43 +139,35 @@ class _PlayerScreenState extends State<PlayerScreen> {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 40),
         children: [
-          ImaPlayerUI(
-            player: ImaPlayer(controller),
-          ),
           AspectRatio(
             aspectRatio: 16 / 9,
-            child: ImaPlayer(
-              ImaPlayerController.network(
-                'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
-                imaTag:
-                    'https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/single_preroll_skippable&sz=640x480&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=',
-                options: const ImaPlayerOptions(
-                  autoPlay: true,
-                  initialVolume: 1.0,
-                  isMixWithOtherMedia: false,
-                  showPlaybackControls: true,
-                ),
-              ),
-              autoDisposeController: true,
-            ),
+            child: ImaPlayer(controllerAsset),
           ),
-          Text(position.toString()),
-          Text(controller.value.bufferedDuration.toString()),
+          // ImaPlayerUI(
+          //   player: ImaPlayer(controllerNetwork),
+          // ),
+          ValueListenableBuilder(
+            valueListenable: position,
+            builder: (context, pos, child) {
+              return Text(pos.toString());
+            },
+          ),
+          Text(controllerAsset.value.bufferedDuration.toString()),
           FilledButton(
-            onPressed: controller.play,
+            onPressed: controllerAsset.play,
             child: Text('PLAY'),
           ),
           FilledButton(
-            onPressed: controller.pause,
+            onPressed: controllerAsset.pause,
             child: Text('PAUSE'),
           ),
           FilledButton(
-            onPressed: controller.stop,
+            onPressed: controllerAsset.stop,
             child: Text('STOP'),
           ),
           FilledButton(
             onPressed: () {
-              controller.play(
+              controllerAsset.play(
                 uri:
                     'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
               );
@@ -168,26 +175,28 @@ class _PlayerScreenState extends State<PlayerScreen> {
             child: Text('PLAY ANOTHER VIDEO'),
           ),
           FilledButton(
-            onPressed: () => ImaPlayerController.pauseImaPlayers(controller),
+            onPressed: () =>
+                ImaPlayerController.pauseImaPlayers(controllerAsset),
             child: Text('PAUSE OTHER PLAYERS'),
           ),
           FilledButton(
-            onPressed: controller.skipAd,
+            onPressed: controllerAsset.skipAd,
             child: Text('SKIP AD'),
           ),
           FilledButton(
-            onPressed: () => controller.setVolume(0.2),
+            onPressed: () => controllerAsset.setVolume(0.2),
             child: Text('SET VOLUME (0.2)'),
           ),
           FilledButton(
-            onPressed: () => controller.seekTo(const Duration(seconds: 10)),
+            onPressed: () =>
+                controllerAsset.seekTo(const Duration(seconds: 10)),
             child: Text('SEEK TO (10 SEC)'),
           ),
           const Divider(),
-          Text(controller.value.toString()),
+          Text(controllerAsset.value.toString()),
           const Divider(),
           StreamBuilder(
-            stream: controller.onAdLoaded,
+            stream: controllerAsset.onAdLoaded,
             builder: (context, snap) {
               if (!snap.hasData) {
                 return Text('No ad data');
@@ -198,6 +207,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
           ),
           const Divider(),
           Text(events.join('\n')),
+          const SizedBox(height: 1000)
         ],
       ),
     );
